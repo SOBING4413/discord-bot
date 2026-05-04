@@ -1,0 +1,28 @@
+{
+  "name": "discord-ai-bot-pro",
+  "version": "3.0.0",
+  "description": "Advanced Discord AI Bot - Railway deployment with conversation memory, multi-model support, and rich interactions",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "register": "node register-commands.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.26.4",
+    "dotenv": "^17.4.2",
+    "express": "^4.21.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "ai",
+    "railway",
+    "gpt"
+  ],
+  "license": "MIT"
+}
