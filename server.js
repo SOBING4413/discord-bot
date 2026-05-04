@@ -15,6 +15,7 @@ import { ConversationManager } from "./src/conversation/manager.js";
 import { EmbedBuilder } from "./src/utils/embed-builder.js";
 import { Logger } from "./src/utils/logger.js";
 import { kv } from "./src/utils/memory-kv.js";
+import { startGateway } from "./src/gateway.js";
 
 // ============================================
 // Attach MemoryKV to process.env so all command
@@ -316,4 +317,7 @@ app.listen(PORT, () => {
   console.log(`🔴 RED ENGINE v3.0 running on port ${PORT}`);
   console.log(`📡 Interactions URL: http://localhost:${PORT}/`);
   console.log(`❤️  Health check: http://localhost:${PORT}/health`);
+
+  // Start Gateway connection to show bot as online
+  startGateway(process.env);
 });
