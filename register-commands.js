@@ -2,9 +2,11 @@
  * 🔴 RED ENGINE v3.0 — Register ALL Slash Commands (Rate-Limit Safe)
  */
 
-const DISCORD_BOT_TOKEN = "MTM2MzEyNjgyOTgzMzEzMDAwNA.G7by_D.cb682nFMopbZViC6sc5ypKcaleOrxziywTb468";
-const DISCORD_APPLICATION_ID = "1363126829833130004";
-const DISCORD_GUILD_ID = "1124997560524873798";
+import "dotenv/config";
+
+const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
+const DISCORD_APPLICATION_ID = process.env.DISCORD_APPLICATION_ID;
+const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID;
 
 const commands = [
   // 🧠 TEXT
@@ -170,63 +172,37 @@ const commands = [
   { name: "help", description: "❓ Daftar semua command" },
 ];
 
-const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-
 async function registerCommands() {
+  if (!DISCORD_BOT_TOKEN || !DISCORD_APPLICATION_ID) {
+    console.error("❌ Missing required env vars: DISCORD_BOT_TOKEN and/or DISCORD_APPLICATION_ID");
+    process.exit(1);
+  }
+
   const url = DISCORD_GUILD_ID
     ? `https://discord.com/api/v10/applications/${DISCORD_APPLICATION_ID}/guilds/${DISCORD_GUILD_ID}/commands`
     : `https://discord.com/api/v10/applications/${DISCORD_APPLICATION_ID}/commands`;
 
-  console.log(`🔴 RED ENGINE v3.0 — Registering ${commands.length} Commands\n`);
-  console.log("⏳ Using 2s delay between requests to avoid rate limits...\n");
+  console.log(`🔴 RED ENGINE v3.0 — Registering ${commands.length} commands`);
+  console.log(`📍 Scope: ${DISCORD_GUILD_ID ? `Guild (${DISCORD_GUILD_ID})` : "Global"}\n`);
 
-  let success = 0, failed = 0;
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bot ${DISCORD_BOT_TOKEN}` },
+      body: JSON.stringify(commands),
+    });
 
-  for (const command of commands) {
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bot ${DISCORD_BOT_TOKEN}` },
-        body: JSON.stringify(command),
-      });
-
-      if (response.ok) {
-        console.log(`✅ /${command.name}`);
-        success++;
-      } else {
-        const errText = await response.text();
-        const errData = JSON.parse(errText);
-        if (errData.retry_after) {
-          console.log(`⏳ /${command.name} — Rate limited, waiting ${Math.ceil(errData.retry_after) + 1}s...`);
-          await sleep((errData.retry_after + 1) * 1000);
-          // Retry
-          const retry = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bot ${DISCORD_BOT_TOKEN}` },
-            body: JSON.stringify(command),
-          });
-          if (retry.ok) {
-            console.log(`✅ /${command.name} (retry success)`);
-            success++;
-          } else {
-            console.log(`❌ /${command.name} — ${await retry.text()}`);
-            failed++;
-          }
-        } else {
-          console.log(`❌ /${command.name} — ${errText}`);
-          failed++;
-        }
-      }
-      // Always wait 2s between requests
-      await sleep(2000);
-    } catch (err) {
-      console.log(`❌ /${command.name} — ${err.message}`);
-      failed++;
-      await sleep(2000);
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Discord API error ${response.status}: ${errText}`);
     }
-  }
 
-  console.log(`\n📊 ${success} success, ${failed} failed`);
+    const registered = await response.json();
+    console.log(`✅ Successfully registered ${registered.length} commands.`);
+  } catch (err) {
+    console.error(`❌ Command registration failed: ${err.message}`);
+    process.exit(1);
+  }
 }
 
 registerCommands();

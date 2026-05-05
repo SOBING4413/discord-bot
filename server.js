@@ -149,12 +149,14 @@ app.post("/", async (req, res) => {
 
 async function handleComponent(interaction, ai, conversations, embedBuilder, env, logger) {
   const customId = interaction.data.custom_id;
+  const selectedValue = interaction.data.values?.[0];
+  const actionId = selectedValue || customId;
   const userId = interaction.member?.user?.id || interaction.user?.id;
   const userName = interaction.member?.user?.global_name || interaction.member?.user?.username || "User";
 
   try {
-    if (customId.startsWith("provider_")) {
-      const provider = customId.replace("provider_", "");
+    if (actionId.startsWith("provider_")) {
+      const provider = actionId.replace("provider_", "");
       await conversations.setUserPreference(userId, "provider", provider);
       return {
         type: 4,
@@ -162,8 +164,8 @@ async function handleComponent(interaction, ai, conversations, embedBuilder, env
       };
     }
 
-    if (customId.startsWith("model_")) {
-      const model = customId.replace("model_", "");
+    if (actionId.startsWith("model_")) {
+      const model = actionId.replace("model_", "");
       await conversations.setUserPreference(userId, "model", model);
       return {
         type: 4,
@@ -171,8 +173,8 @@ async function handleComponent(interaction, ai, conversations, embedBuilder, env
       };
     }
 
-    if (customId.startsWith("lang_")) {
-      const lang = customId.replace("lang_", "");
+    if (actionId.startsWith("lang_")) {
+      const lang = actionId.replace("lang_", "");
       await conversations.setUserPreference(userId, "language", lang);
       return {
         type: 4,
