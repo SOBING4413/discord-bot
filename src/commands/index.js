@@ -134,11 +134,15 @@ export class CommandRegistry {
 
       return await command.execute(interaction);
     } catch (error) {
-      this.logger.error(`Command error: /${commandName}`, error);
+      this.logger.error(`Command error: /${commandName}`, {
+        message: error?.message || String(error),
+        stack: error?.stack || null,
+        userId: interaction.member?.user?.id || interaction.user?.id || null,
+      });
       return {
         type: 4,
         data: {
-          embeds: [this.embedBuilder.error("Error", "An unexpected error occurred. Please try again later.")],
+          embeds: [this.embedBuilder.error("Error", `Command \`/${commandName}\` gagal diproses. Coba lagi, lalu cek input command kamu.`)],
           flags: 64,
         },
       };

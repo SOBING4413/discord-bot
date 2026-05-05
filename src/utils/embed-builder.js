@@ -18,6 +18,17 @@ export class EmbedBuilder {
   };
 
   static FOOTER = "🔴 RED ENGINE • Railway";
+  static LIMITS = {
+    TITLE: 256,
+    DESCRIPTION: 4096,
+    FIELD_VALUE: 1024,
+  };
+
+  _safeText(value, max = EmbedBuilder.LIMITS.DESCRIPTION) {
+    const text = String(value ?? "");
+    if (text.length <= max) return text;
+    return `${text.slice(0, Math.max(0, max - 1))}…`;
+  }
 
   aiResponse(userName, question, answer) {
     return {
@@ -53,9 +64,13 @@ export class EmbedBuilder {
   }
 
   codeResponse(request, code) {
+    const safeRequest = this._safeText(request, 200);
+    const header = `**Request:** ${safeRequest}\n\n`;
+    const maxCodeLength = Math.max(0, EmbedBuilder.LIMITS.DESCRIPTION - header.length);
+    const safeCode = this._safeText(code, maxCodeLength);
     return {
       title: "💻 Code Generated — RED ENGINE",
-      description: `**Request:** ${request.substring(0, 200)}\n\n${code}`,
+      description: `${header}${safeCode}`,
       color: EmbedBuilder.COLORS.CODE,
       footer: { text: EmbedBuilder.FOOTER },
       timestamp: new Date().toISOString(),
