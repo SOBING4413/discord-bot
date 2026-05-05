@@ -6,9 +6,19 @@ export class CodeCommand {
   }
 
   async execute(interaction) {
-    const request = interaction.data.options?.[0]?.value;
+    const request = interaction.data.options?.[0]?.value?.trim?.();
     const language = interaction.data.options?.[1]?.value || null;
     const userId = interaction.member?.user?.id || interaction.user?.id;
+
+    if (!request) {
+      return {
+        type: 4,
+        data: {
+          embeds: [this.embed.warning("⚠️ Input tidak valid", "Isi dulu kebutuhan coding kamu. Contoh: `/code buatkan API express dengan auth JWT`.")],
+          flags: 64,
+        },
+      };
+    }
 
     const langInstruction = language ? `Use ${language} programming language.` : "Choose the most appropriate programming language.";
     const prompt = `${langInstruction}
@@ -22,7 +32,6 @@ Include:
 3. Example usage if applicable`;
 
     const response = await this.ai.chat(prompt, `code_${userId}`, userId, {
-      model: "gpt-4o-mini",
       systemPrompt: `You are an expert software engineer. Write clean, efficient, well-documented code.
 Always use markdown code blocks with the appropriate language tag.
 Follow best practices and design patterns.
